@@ -126,11 +126,11 @@
 ;; representa a seguinte situação:
 ;; 
 ;; [6][14][12]    [┏][┳][┓]
-;; [7][ 9][  ] => [┣][┛][ ]
-;; [ ][  ][  ]    [ ][ ][ ]
+;; [7][ 9][ 5] => [┣][┛][┃]
+;; [7][  ][  ]    [┣][┳][ ]
 ;; [ ][  ][  ]    [ ][ ][ ]
 ;; 
-;; A chamada (seguro? 5 '(9 7 12 14 6) (tamanho 4 3)) deve verificar se 
+;; A chamada (seguro? 5 '(7 5 9 7 12 14 6) (tamanho 4 3)) deve verificar se 
 ;; o bloco 5 [┃] é seguro de ser adicionado à solução, isto é, inserido 
 ;; na posição lin=2, col=3 da situação descrita acima. Observe que para 
 ;; este exemplo o bloco 5 é seguro, pois ele se encaixa a todos os 
@@ -138,7 +138,42 @@
 ;; borda direita (branco) do tabuleiro. Veja que não houve necessidade 
 ;; de se verificar o encaixe com o bloco abaixo, já que o mesmo ainda 
 ;; não existe na solução.
-(define (seguro? bloco solucao tam) #f)
+(define (seguro? bloco solucao tam)
+  [cond
+    ;;se e primeira linha
+    ( (if(< (length solucao) (tamanho-largura tam))
+             ;;se e primeiro elemento
+        (if (zero? (remainder (length solucao) (tamanho-largura tam)))
+            (encaixa-h? 0 bloco)
+              ;;se e ultimo elemento
+          (if (zero? (remainder (length solucao) (sub1 (tamanho-largura tam))))
+              (and (encaixa-h? bloco 0) (encaixa-h? (list-ref solucao 0) bloco))
+              ;;se e elemento medio
+             (encaixa-h? (list-ref solucao 0) bloco))) #f))
+
+     ;;se e ultima linha
+    ( (if(=> (length solucao) (* (tamanho-altura tam) (sub1 (tamanho-largura tam))))
+             ;;se e primeiro elemento
+        (if (zero? (remainder (length solucao) (tamanho-largura tam)))
+            (encaixa-h? 0 bloco)
+              ;;se e ultimo elemento
+          (if (zero? (remainder (length solucao) (sub1 (tamanho-largura tam))))
+              (and (encaixa-h? bloco 0) (encaixa-h? (list-ref solucao 0) bloco))
+              ;;se e elemento medio
+             (encaixa-h? (list-ref solucao 0) bloco))) #f))
+    (else
+     #f)
+    ])
+
+(seguro? 14 '(6) (tamanho 4 3))
+
+  ;;seguro baixo esquerda
+    ;;((and (if (equal? (remainder (length solucao) (tamanho-largura tam)) 0)
+     ;;(encaixa-h? 0 bloco) (encaixa-h? (list-ref solucao 0) bloco))
+    ;;seguro cima
+    ;(if (< (length solucao) (tamanho-altura tam))
+     ;(encaixa-v? 0 bloco) (encaixa-v? (list-ref solucao (sub1 (tamanho-largura tam))) bloco))
+    ;)
 
 
 ;; String -> Jogo
