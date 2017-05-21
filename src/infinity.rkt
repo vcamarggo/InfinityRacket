@@ -4,7 +4,7 @@
 ;; até que todos se encaixem entre si. O método de resolução utilizado será
 ;; por meio de busca com retrocesso (backtracking).
 ;;
-;; ** Conceitos **
+;; ** Conceitos ** 
 ;; Bloco
 ;;  Um bloco é uma peça do jogo Infinity. O bloco é representado como um
 ;;  caractere quando lido ou escrito de um arquivo, e representado como um
