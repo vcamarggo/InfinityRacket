@@ -144,28 +144,30 @@
     ( (if(< (length solucao) (tamanho-largura tam))
              ;;se e primeiro elemento
         (if (zero? (remainder (length solucao) (tamanho-largura tam)))
-            (encaixa-h? 0 bloco)
+            (and (encaixa-h? 0 bloco) (encaixa-v? 0 bloco))
               ;;se e ultimo elemento
           (if (zero? (remainder (length solucao) (sub1 (tamanho-largura tam))))
-              (and (encaixa-h? bloco 0) (encaixa-h? (list-ref solucao 0) bloco))
+              (and (encaixa-h? bloco 0) (encaixa-h? (list-ref solucao 0) bloco) (encaixa-v? 0 bloco))
               ;;se e elemento medio
-             (encaixa-h? (list-ref solucao 0) bloco))) #f))
+             (and (encaixa-v? 0 bloco) (encaixa-h? (list-ref solucao 0) bloco)))) #f))
 
      ;;se e ultima linha
-    ( (if(=> (length solucao) (* (tamanho-altura tam) (sub1 (tamanho-largura tam))))
+    ( (if(>= (length solucao) (* (tamanho-altura tam) (sub1 (tamanho-largura tam))))
              ;;se e primeiro elemento
         (if (zero? (remainder (length solucao) (tamanho-largura tam)))
-            (encaixa-h? 0 bloco)
-              ;;se e ultimo elemento
+            (and (encaixa-h? 0 bloco) (encaixa-v? (list-ref solucao (sub1 (tamanho-largura tam))) bloco) (encaixa-v? bloco 0))
+              ;;se e ultimo elemento ARRUMAR
           (if (zero? (remainder (length solucao) (sub1 (tamanho-largura tam))))
-              (and (encaixa-h? bloco 0) (encaixa-h? (list-ref solucao 0) bloco))
-              ;;se e elemento medio
-             (encaixa-h? (list-ref solucao 0) bloco))) #f))
+              (and (encaixa-h? bloco 0) (encaixa-h? (list-ref solucao 0) bloco)
+                   (encaixa-v? (list-ref solucao (sub1 (tamanho-largura tam))) bloco) (encaixa-v? bloco 0))
+              ;;se e elemento medio ARRUMAR
+             (and (encaixa-h? (list-ref solucao 0) bloco)
+                   (encaixa-v? (list-ref solucao (sub1 (tamanho-largura tam))) bloco) (encaixa-v? bloco 0)))) #f))
+
+    ;;se linha do meio
     (else
      #f)
     ])
-
-(seguro? 14 '(6) (tamanho 4 3))
 
   ;;seguro baixo esquerda
     ;;((and (if (equal? (remainder (length solucao) (tamanho-largura tam)) 0)
