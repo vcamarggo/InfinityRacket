@@ -85,6 +85,57 @@
     (else
      #f)])
 
+
+;; Bloco -> Lógico
+;; ---------------------
+;; Verifica se o bloco se encaixa horizontalmente à esquerda do ultimo bloco (vazio)
+;; Exemplo: (encaixa 0)
+;;          > #t
+(define (encaixa-ultimo-direita? bloco)
+  (encaixa-h? bloco 0))
+
+
+;; Bloco -> Lógico
+;; ---------------------
+;; Verifica se o bloco se encaixa horizontalmente à direita do primeiro bloco (vazio)
+;; Exemplo: (encaixa 0)
+;;          > #t
+(define (encaixa-ultimo-esquerda? bloco)
+  (encaixa-h? 0 bloco))
+
+;; Bloco -> Lógico
+;; ---------------------
+;; Verifica se o bloco se encaixa verticalmente abaixo do primeiro bloco (vazio)
+;; Exemplo: (encaixa 0)
+;;          > #t
+(define (encaixa-ultimo-acima? bloco)
+  (encaixa-v? 0 bloco))
+
+
+;; Bloco  -> Lógico
+;; ---------------------
+;; Verifica se o bloco se encaixa verticalmente acima do ultimo bloco (vazio)
+;; Exemplo: (encaixa 0)
+;;          > #t
+(define (encaixa-ultimo-abaixo? bloco)
+  (encaixa-v? bloco 0))
+
+;; Lista numero -> Lógico
+;; ---------------------
+;; Verifica se o bloco e o ultimo da fileira
+;; Exemplo: (e-o-ultimo? '(1) 2)
+;;          > #t
+(define (e-o-ultimo? lista tam)
+  (zero? (remainder (add1 (length lista)) tam)))
+
+;; Lista numero -> Lógico
+;; ---------------------
+;; Verifica se o bloco e o primeiro da fileira
+;; Exemplo: (e-o-ultimo? '() 2)
+;;          > #t
+(define (e-o-primeiro? lista tam)
+  (zero? (remainder (length lista) tam)))
+
 ;; Bloco Bloco -> Lógico
 ;; ---------------------
 ;; Verifica se o bloco-t se encaixa verticalmente acima do bloco-b
@@ -143,40 +194,44 @@
     ;;se e primeira linha
     ( (if(< (length solucao) (tamanho-largura tam))
              ;;se e primeiro elemento
-        (if (zero? (remainder (length solucao) (tamanho-largura tam)))
-            (and (encaixa-h? 0 bloco) (encaixa-v? 0 bloco))
+        (if (e-o-primeiro? solucao (tamanho-largura tam))
+            (and (encaixa-ultimo-esquerda? bloco) (encaixa-ultimo-acima? bloco))
               ;;se e ultimo elemento
-          (if (zero? (remainder (length solucao) (sub1 (tamanho-largura tam))))
-              (and (encaixa-h? bloco 0) (encaixa-h? (list-ref solucao 0) bloco) (encaixa-v? 0 bloco))
+          (if (e-o-ultimo? solucao (tamanho-largura tam))
+              (and (encaixa-ultimo-direita? bloco) (encaixa-h? (list-ref solucao 0) bloco) (encaixa-ultimo-acima? bloco))
               ;;se e elemento medio
-             (and (encaixa-v? 0 bloco) (encaixa-h? (list-ref solucao 0) bloco)))) #f))
+             (and (encaixa-ultimo-acima? bloco) (encaixa-h? (list-ref solucao 0) bloco)))) #f))
 
      ;;se e ultima linha
     ( (if(>= (length solucao) (* (tamanho-altura tam) (sub1 (tamanho-largura tam))))
              ;;se e primeiro elemento
-        (if (zero? (remainder (length solucao) (tamanho-largura tam)))
-            (and (encaixa-h? 0 bloco) (encaixa-v? (list-ref solucao (sub1 (tamanho-largura tam))) bloco) (encaixa-v? bloco 0))
-              ;;se e ultimo elemento ARRUMAR
-          (if (zero? (remainder (length solucao) (sub1 (tamanho-largura tam))))
-              (and (encaixa-h? bloco 0) (encaixa-h? (list-ref solucao 0) bloco)
-                   (encaixa-v? (list-ref solucao (sub1 (tamanho-largura tam))) bloco) (encaixa-v? bloco 0))
-              ;;se e elemento medio ARRUMAR
+        (if (e-o-primeiro? solucao (tamanho-largura tam))
+            (and (encaixa-ultimo-esquerda? bloco) (encaixa-v? (list-ref solucao (sub1 (tamanho-largura tam))) bloco) (encaixa-ultimo-abaixo? bloco))
+              ;;se e ultimo elemento
+          (if (e-o-ultimo? solucao (tamanho-largura tam))
+              (and (encaixa-ultimo-direita? bloco) (encaixa-h? (list-ref solucao 0) bloco)
+                   (encaixa-v? (list-ref solucao (sub1 (tamanho-largura tam))) bloco) (encaixa-ultimo-abaixo? bloco))
+              ;;se e elemento medio
              (and (encaixa-h? (list-ref solucao 0) bloco)
-                   (encaixa-v? (list-ref solucao (sub1 (tamanho-largura tam))) bloco) (encaixa-v? bloco 0)))) #f))
-
+                   (encaixa-v? (list-ref solucao (sub1 (tamanho-largura tam))) bloco) (encaixa-ultimo-abaixo? bloco)))) #f))
+    
     ;;se linha do meio
+    ( (if(and (>= (length solucao) (tamanho-largura tam)) (< (length solucao) (* (tamanho-altura tam) (sub1 (tamanho-largura tam)))))
+             ;;se e primeiro elemento
+        (if (e-o-primeiro? solucao (tamanho-largura tam))
+            (and (encaixa-ultimo-esquerda? bloco) (encaixa-v? (list-ref solucao (sub1 (tamanho-largura tam))) bloco))
+              ;;se e ultimo elemento
+          (if (e-o-ultimo? solucao (tamanho-largura tam))
+              (and (encaixa-ultimo-direita? bloco) (encaixa-h? (list-ref solucao 0) bloco)
+                   (encaixa-v? (list-ref solucao (sub1 (tamanho-largura tam))) bloco))
+              ;;se e elemento medio
+             (and (encaixa-h? (list-ref solucao 0) bloco)
+                   (encaixa-v? (list-ref solucao (sub1 (tamanho-largura tam))) bloco)))) #f))
+    
     (else
      #f)
     ])
-
-  ;;seguro baixo esquerda
-    ;;((and (if (equal? (remainder (length solucao) (tamanho-largura tam)) 0)
-     ;;(encaixa-h? 0 bloco) (encaixa-h? (list-ref solucao 0) bloco))
-    ;;seguro cima
-    ;(if (< (length solucao) (tamanho-altura tam))
-     ;(encaixa-v? 0 bloco) (encaixa-v? (list-ref solucao (sub1 (tamanho-largura tam))) bloco))
-    ;)
-
+              
 
 ;; String -> Jogo
 ;; Faz a leitura e processa um jogo armazenado em arquivo.
