@@ -244,13 +244,19 @@
                       (encaixa-superior? solucao bloco tam)))) #f))
     (else
      #f)])
-              
-;; String -> Jogo
-;; Faz a leitura e processa um jogo armazenado em arquivo.
-;; Exemplo: (ler-jogo "..\\testes\\casos\\05.txt")
-;;          > '((0 6 6 1) (12 15 15 6) (1 10 10 0) (0 2 1 0))
-(define (ler-jogo arquivo)
-  (map arquive-to-list-number (map list (port->lines (open-input-file arquivo)))))
+
+
+;; lista -> lista
+;;Recebe um número e retorna possibilidades
+;; Exemplo: "0"
+;;          > '( 0 0 0 0)
+(define (gera-possibilidades elem)
+  (define (possibilidades elem k )
+  (cond
+    [(zero? k) empty]
+    [else
+     (cons (rotacionar elem) (possibilidades (rotacionar elem) (sub1 k)))]))
+  (possibilidades elem 4))
 
 ;; lista -> lista
 ;;Recebe uma lista e transforma em números do jogo
@@ -260,7 +266,7 @@
   (cond
     [(empty? lista) empty]
     [else
-     (cons (list-index (curry equal? (first lista)) blocos-reps) (converte-string-number(rest lista)))]))
+     (cons (gera-possibilidades(list-index (curry equal? (first lista)) blocos-reps)) (converte-string-number(rest lista)))]))
 
 ;; lista de lista em caracteres -> lista de lista em números
 ;;Recebe uma lista e transforma em números do jogo
@@ -272,6 +278,16 @@
     [else
      (append (converte-string-number (string->list (first lst)))
              (arquive-to-list-number (rest lst)))]))
+              
+;; String -> Jogo
+;; Faz a leitura e processa um jogo armazenado em arquivo.
+;; Exemplo: (ler-jogo "..\\testes\\casos\\05.txt")
+;;          > '((0 6 6 1) (12 15 15 6) (1 10 10 0) (0 2 1 0))
+(define (ler-jogo arquivo)
+  (map arquive-to-list-number (map list (port->lines (open-input-file arquivo)))))
+(ler-jogo "..\\testes\\casos\\05.txt")
+
+
 
 ;; Jogo -> void
 ;; Escreve o jogo na tela codificado em caracteres.

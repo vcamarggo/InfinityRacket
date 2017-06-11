@@ -1,5 +1,6 @@
 #lang racket
 (require srfi/1)
+(require srfi/13)
 
 ;; Este programa resolve um jogo infinity rotacionando seus blocos
 ;; até que todos se encaixem entre si. O método de resolução utilizado será
@@ -26,6 +27,7 @@
 
 ;; lista com as representações dos blocos como caracteres
 (define blocos-reps (string->list " ╹╺┗╻┃┏┣╸┛━┻┓┫┳╋"))
+(define blocos-string " ╹╺┗╻┃┏┣╸┛━┻┓┫┳╋")
 
 ;; lista com as numerações dos blocos que tem saida a direita
 (define blocos-saida-direita (list 2 3 6 7 10 11 14 15))
@@ -246,7 +248,7 @@
      #f)])
 
 
-;; lista -> lista
+;; elemento -> lista
 ;;Recebe um número e retorna possibilidades
 ;; Exemplo: "0"
 ;;          > '( 0 0 0 0)
@@ -258,36 +260,39 @@
      (cons (rotacionar elem) (possibilidades (rotacionar elem) (sub1 k)))]))
   (possibilidades elem 4))
 
-;; lista -> lista
-;;Recebe uma lista e transforma em números do jogo
+;; String -> lista
+;;Recebe uma string e transforma em números do jogo
 ;; Exemplo: "┏━┳┓"
-;;          > '((6 10 14 12))
-(define (converte-string-number lista)
+;;          > '((12 9 3 6) (5 10 5 10) (13 11 7 14) (9 3 6 12))
+(define (gera-poss caracteres)
+(define (converte-string-number palavra possibilidades)
   (cond
-    [(empty? lista) empty]
+    [(zero? (string-length palavra)) possibilidades]
     [else
-     (cons (gera-possibilidades(list-index (curry equal? (first lista)) blocos-reps)) (converte-string-number(rest lista)))]))
+     (converte-string-number (substring palavra 1)
+     (append possibilidades (list (gera-possibilidades(string-contains " ╹╺┗╻┃┏┣╸┛━┻┓┫┳╋" (string (string-ref palavra 0)))))))]))
+  (converte-string-number caracteres null))
 
-;; lista de lista em caracteres -> lista de lista em números
-;;Recebe uma lista e transforma em números do jogo
-;; Exemplo: ("┏━┳┓" "┣┳┫┃" "┃┣┻┫" "┗┻━┛"
-;;          > '((6 10 14 12) (7 14 13 5) (5 7 11 13) (3 11 10 9)))
-(define (arquive-to-list-number lst)
+;; lista -> lista
+;; Faz a leitura e processa um jogo armazenado em arquivo.
+;; Exemplo: "┗┃┳┓" "┫┻┣┃" "┃┫┣┣" "┏┫┃┗"
+;;         >'((6 12 9 3)  (10 5 10 5)  (13 11 7 14) (9 3 6 12)
+;             (11 7 14 13)(7 14 13 11) (14 13 11 7) (10 5 10 5)
+;             (10 5 10 5) (11 7 14 13) (14 13 11 7) (14 13 11 7)
+;;            (12 9 3 6)  (11 7 14 13) (10 5 10 5)  (6 12 9 3))
+(define (gera-listas-combinacoes lst)
   (cond
     [(empty? lst) empty]
     [else
-     (append (converte-string-number (string->list (first lst)))
-             (arquive-to-list-number (rest lst)))]))
-              
+      (append (gera-poss (first lst)) (gera-listas-combinacoes (rest lst)))]))
+(gera-listas-combinacoes (list"┗┃┳┓" "┫┻┣┃" "┃┫┣┣" "┏┫┃┗"))
+
 ;; String -> Jogo
 ;; Faz a leitura e processa um jogo armazenado em arquivo.
 ;; Exemplo: (ler-jogo "..\\testes\\casos\\05.txt")
 ;;          > '((0 6 6 1) (12 15 15 6) (1 10 10 0) (0 2 1 0))
 (define (ler-jogo arquivo)
-  (map arquive-to-list-number (map list (port->lines (open-input-file arquivo)))))
-(ler-jogo "..\\testes\\casos\\05.txt")
-
-
+  (gera-listas-combinacoes (port->lines (open-input-file arquivo))))
 
 ;; Jogo -> void
 ;; Escreve o jogo na tela codificado em caracteres.
