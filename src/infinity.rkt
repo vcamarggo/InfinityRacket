@@ -1,5 +1,4 @@
 #lang racket
-(require srfi/1)
 (require srfi/13)
 
 ;; Este programa resolve um jogo infinity rotacionando seus blocos
@@ -27,7 +26,6 @@
 
 ;; lista com as representações dos blocos como caracteres
 (define blocos-reps (string->list " ╹╺┗╻┃┏┣╸┛━┻┓┫┳╋"))
-(define blocos-string " ╹╺┗╻┃┏┣╸┛━┻┓┫┳╋")
 
 ;; lista com as numerações dos blocos que tem saida a direita
 (define blocos-saida-direita (list 2 3 6 7 10 11 14 15))
@@ -285,7 +283,6 @@
     [(empty? lst) empty]
     [else
       (append (gera-poss (first lst)) (gera-listas-combinacoes (rest lst)))]))
-(gera-listas-combinacoes (list"┗┃┳┓" "┫┻┣┃" "┃┫┣┣" "┏┫┃┗"))
 
 ;; String -> Jogo
 ;; Faz a leitura e processa um jogo armazenado em arquivo.
@@ -294,15 +291,32 @@
 (define (ler-jogo arquivo)
   (gera-listas-combinacoes (port->lines (open-input-file arquivo))))
 
-;; Jogo -> void
-;; Escreve o jogo na tela codificado em caracteres.
-;; Exemplo: (escrever-jogo '((6 10 14 12) (7 14 13 5) (5 7 11 13) (3 11 10 9)))
-;;          > ┏━┳┓
-;;            ┣┳┫┃
-;;            ┃┣┻┫
-;;            ┗┻━┛
-(define (escrever-jogo jogo) void)
-;; Dica: procure pelas funções pré-definidas list->string e string-join
+;; String -> Número
+;; Faz a leitura e processa o tamanho de um jogo armazenado em arquivo.
+;; Exemplo: (gerar-tamanho "..\\testes\\casos\\05.txt")
+;;          > '(tamanho 4 4)
+(define (gerar-tamanho arquivo)
+  (let ([arquivoLet (port->lines (open-input-file arquivo))])
+  (tamanho (length arquivoLet)
+    (string-length (first arquivoLet)))))
+
+(define (remove-da-lista nr lista )
+  (cond
+    [(empty? lista) lista]
+    [else
+     (cond
+       [(equal? (first (first lista)) nr)  (cons (rest (first lista)) (rest lista))]
+        [else (cons (first lista)
+                   (remove-da-lista nr (rest lista) ))])]))
+
+
+
+(define (part lst i)
+  (cond
+    [(empty? lst) empty]
+    [else
+  (cons (take lst i)
+        (part (drop lst i) i))]))
 
 ;; Jogo -> Jogo || #f
 ;; Resolve o jogo Infinity e o retorna resolvido. Caso não seja possível
@@ -319,7 +333,53 @@
 ;;   (6 15 15 9)     =>   [┏][╋][╋][┛]
 ;;   (1  5  5 0)          [╹][┃][┃][ ]
 ;;   (0  1  1 0))         [ ][╹][╹][ ]
-(define (resolver jogo) #f)
+;(part (reverse solucao) (tamanho-largura tamanho))
+(define (resolver possibilidades tamanho)
+  (define (resolver-encapsulado solucao possibilidades tamanho)
+  (let* ([candidatos (if  (empty? possibilidades) '()  (first possibilidades))]
+        [candidato (if  (empty? candidatos) null  (first candidatos))])
+    (cond
+      [(empty? possibilidades) (part (reverse solucao) (tamanho-largura tamanho))]
+      [(empty? candidatos) #f]
+      [(seguro? candidato solucao tamanho)
+       (or (resolver-encapsulado (cons candidato solucao) (remove candidatos possibilidades) tamanho)
+           (resolver-encapsulado solucao (remove-da-lista candidato possibilidades) tamanho))]
+      [else (resolver-encapsulado solucao (remove-da-lista candidato possibilidades) tamanho)])))
+  (resolver-encapsulado null possibilidades tamanho))
+
+;;numero -> caractere
+;; Realiza a conversão numero/carctere
+;; exemplo:
+;;        > 0
+(define (converte-number-caractere indice)
+(string-ref (list->string blocos-reps) indice))
+
+;; Jogo -> void
+;; Escreve o jogo na tela codificado em caracteres.
+;; Exemplo: (escrever-jogo '((6 10 14 12) (7 14 13 5) (5 7 11 13) (3 11 10 9))
+;;          > ┏━┳┓
+;;            ┣┳┫┃
+;;            ┃┣┻┫
+;;            ┗┻━┛
+(define (escrever-jogo jogo)
+(cond [ (false? jogo) "nao ha solucao"]
+      [(or (empty? jogo)) ""]
+     [else
+      (string-append (list->string (map converte-number-caractere (first jogo))) (escrever-jogo (rest jogo)))]))
+
+;;11 12 13 14 18 19 20 aleatorio_30x30_curvas aleatorio_30x30_tudo aleatorio_50x50_curvas aleatorio_50x50_tudo
+(define arq "..\\testes\\casos\\aleatorio_30x30_tudo.txt")
+(escrever-jogo (resolver (ler-jogo arq) (gerar-tamanho arq)))
+
+;(define (encapsula-formata-solucao solucao tamanho a l)
+ ; (let ([solucao-reversa (reverse solucao)])
+  ;(cond
+   ;  [(equal? l (largura tamanho)) (encapsula-formata-solucao solucao tamanho (add1 a) 0)]
+    ; [(equal? a (add1 (altura tamanho))) solucao]
+     ;[else
+      ;])))
+;; Dica: procure pelas funções pré-definidas list->string e string-join
+
 
 ;; List String -> void
 ;; Esta é a função principal. Esta função é chamada a partir do arquivo
