@@ -12,7 +12,7 @@
 ;; Você pode escolher quais testes serão executados alterando a definição de
 ;; test-suite-infinity.
 
-(require rackunit/text-ui rackunit "infinity.rkt")
+(require rackunit/text-ui rackunit "infinity2.rkt")
 
 (define test-suite-infinity
   (test-suite
@@ -28,7 +28,7 @@
    (test-case
     "Rotação de todos os blocos"
     (check-equal? (map rotacionar (range 16))
-                  '(0 2 3 6 8 10 12 14 1 3 5 7 9 11 13 15)))))
+                  '(0 2 4 6 8 10 12 14 1 3 5 7 9 11 13 15)))))
 
 (define test-suite-encaixa-h?
   (test-suite

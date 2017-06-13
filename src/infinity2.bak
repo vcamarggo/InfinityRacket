@@ -218,7 +218,7 @@
                  (and (encaixa-ultimo-acima? bloco)  (encaixa-anterior? solucao bloco)))) #f))
 
     ;;se e ultima linha
-    ((if(>= (length solucao) (- (* (tamanho-altura tam) (tamanho-largura tam)) (tamanho-largura tam)))
+    ((if(>= (length solucao) (* (tamanho-altura tam) (sub1 (tamanho-largura tam))))
          ;;se e primeiro elemento
          (if (e-o-primeiro? solucao (tamanho-largura tam))
              (and (encaixa-ultimo-esquerda? bloco) (encaixa-superior? solucao bloco tam) (encaixa-ultimo-abaixo? bloco))
@@ -231,7 +231,7 @@
                       (encaixa-superior? solucao bloco tam) (encaixa-ultimo-abaixo? bloco)))) #f))
     
     ;;se linha do meio
-    ((if(and (>= (length solucao) (tamanho-largura tam)) (< (length solucao) (- (* (tamanho-altura tam) (tamanho-largura tam)) (tamanho-largura tam))))
+    ((if(and (>= (length solucao) (tamanho-largura tam)) (< (length solucao) (* (tamanho-altura tam) (sub1 (tamanho-largura tam)))))
          ;;se e primeiro elemento
          (if (e-o-primeiro? solucao (tamanho-largura tam))
              (and (encaixa-ultimo-esquerda? bloco) (encaixa-superior? solucao bloco tam))
@@ -245,7 +245,6 @@
     (else
      #f)])
 
-;(seguro? 12 '(3 0 1 12 2 13 11 3 5 5 5 4 12 7 0 8 6) (tamanho 7 3))
 
 ;; elemento -> lista
 ;;Recebe um número e retorna possibilidades
@@ -285,8 +284,7 @@
     [else
       (append (gera-poss (first lst)) (gera-listas-combinacoes (rest lst)))]))
 
-;(gera-listas-combinacoes '("┓╹ " "┳┓╻" "┃━┃" "┛┣┣" "╻┓╸" " ┗┓" " ╸┛"))
-;(gera-listas-combinacoes '("┏╸ " "┣┓╻" "┃┃┃" "┗┻┫" "╺┓╹" " ┗┓" " ╺┛"))
+(gera-listas-combinacoes '(" ┏┓ " "┗┫┣┛" "┗┫┣┛" "┏┻┻┓" "┗━━┛"))
 
 
 ;; String -> Jogo
@@ -305,8 +303,6 @@
   (tamanho (length arquivoLet)
     (string-length (first arquivoLet)))))
 
-
-
 (define (remove-da-lista nr lista )
   (cond
     [(empty? lista) lista]
@@ -316,8 +312,8 @@
         [else (cons (first lista)
                    (remove-da-lista nr (rest lista) ))])]))
 
-;; lista numero -> lista de listas de tamanho numero
-;; particiona o jogo a cada i elementos
+
+
 (define (part lst i)
   (cond
     [(empty? lst) empty]
@@ -340,6 +336,7 @@
 ;;   (6 15 15 9)     =>   [┏][╋][╋][┛]
 ;;   (1  5  5 0)          [╹][┃][┃][ ]
 ;;   (0  1  1 0))         [ ][╹][╹][ ]
+;(part (reverse solucao) (tamanho-largura tamanho))
 (define (resolver possibilidades tamanho)
   (define (resolver-encapsulado solucao possibilidades tamanho)
   (let* ([candidatos (if  (empty? possibilidades) '()  (first possibilidades))]
@@ -352,7 +349,9 @@
            (resolver-encapsulado solucao (remove-da-lista candidato possibilidades) tamanho))]
       [else (resolver-encapsulado solucao (remove-da-lista candidato possibilidades) tamanho)])))
   (resolver-encapsulado null possibilidades tamanho))
-;(resolver (ler-jogo "..\\testes\\casos\\20.txt") (gerar-tamanho "..\\testes\\casos\\20.txt"))
+
+
+(resolver (ler-jogo "..\\testes\\casos\\11.txt") (gerar-tamanho "..\\testes\\casos\\11.txt"))
 
 ;;numero -> caractere
 ;; Realiza a conversão numero/carctere
@@ -372,64 +371,20 @@
 (cond [ (false? jogo) "nao ha solucao"]
       [(or (empty? jogo)) ""]
      [else
-      (string-append (list->string (map converte-number-caractere (first jogo))) "\n" (escrever-jogo (rest jogo)))]))
+      (string-append (list->string (map converte-number-caractere (first jogo))) (escrever-jogo (rest jogo)))]))
 
-;12 13 14 20
-(define arq1 "..\\testes\\casos\\01.txt")
-(define arq2 "..\\testes\\casos\\02.txt")
-(define arq3 "..\\testes\\casos\\03.txt")
-(define arq4 "..\\testes\\casos\\04.txt")
-(define arq5 "..\\testes\\casos\\05.txt")
-(define arq6 "..\\testes\\casos\\06.txt")
-(define arq7 "..\\testes\\casos\\07.txt")
-(define arq8 "..\\testes\\casos\\08.txt")
-(define arq9 "..\\testes\\casos\\09.txt")
-(define arq10 "..\\testes\\casos\\10.txt")
-(define arq11 "..\\testes\\casos\\11.txt")
-(define arq12 "..\\testes\\casos\\12.txt")
-(define arq13 "..\\testes\\casos\\13.txt")
-(define arq14 "..\\testes\\casos\\14.txt")
-(define arq15 "..\\testes\\casos\\15.txt")
-(define arq16 "..\\testes\\casos\\16.txt")
-(define arq17 "..\\testes\\casos\\17.txt")
-(define arq18 "..\\testes\\casos\\18.txt")
-(define arq19 "..\\testes\\casos\\19.txt")
-(define arq20 "..\\testes\\casos\\20.txt")
-(define arq-esp-1 "..\\testes\\casos\\aleatorio_10x10_curvas.txt")
-(define arq-esp-2 "..\\testes\\casos\\aleatorio_10x10_tudo.txt")
-(define arq-esp-3 "..\\testes\\casos\\aleatorio_30x30_curvas.txt")
-(define arq-esp-4 "..\\testes\\casos\\aleatorio_30x30_tudo.txt")
-(define arq-esp-5 "..\\testes\\casos\\aleatorio_50x50_curvas.txt")
-(define arq-esp-6 "..\\testes\\casos\\aleatorio_50x50_tudo.txt")
+;;11 12 13 14 18 19 20 aleatorio_30x30_curvas aleatorio_30x30_tudo aleatorio_50x50_curvas aleatorio_50x50_tudo
+;(define arq "..\\testes\\casos\\aleatorio_30x30_tudo.txt")
+;(escrever-jogo (resolver (ler-jogo arq) (gerar-tamanho arq)))
 
-(display (escrever-jogo (resolver (ler-jogo arq1) (gerar-tamanho arq1))))
-(display(escrever-jogo (resolver (ler-jogo arq2) (gerar-tamanho arq2))))
-(display(escrever-jogo (resolver (ler-jogo arq3) (gerar-tamanho arq3))))
-(display(escrever-jogo (resolver (ler-jogo arq4) (gerar-tamanho arq4))))
-(display(escrever-jogo (resolver (ler-jogo arq5) (gerar-tamanho arq5))))
-(display(escrever-jogo (resolver (ler-jogo arq6) (gerar-tamanho arq6))))
-(display(escrever-jogo (resolver (ler-jogo arq7) (gerar-tamanho arq7))))
-(display(escrever-jogo (resolver (ler-jogo arq8) (gerar-tamanho arq8))))
-(display(escrever-jogo (resolver (ler-jogo arq9) (gerar-tamanho arq9))))
-(display(escrever-jogo (resolver (ler-jogo arq10) (gerar-tamanho arq10))))
-(display(escrever-jogo (resolver (ler-jogo arq11) (gerar-tamanho arq11))))
-(display(escrever-jogo (resolver (ler-jogo arq12) (gerar-tamanho arq12))))
-(display(escrever-jogo (resolver (ler-jogo arq13) (gerar-tamanho arq13))))
-(display(escrever-jogo (resolver (ler-jogo arq14) (gerar-tamanho arq14))))
-(display(escrever-jogo (resolver (ler-jogo arq15) (gerar-tamanho arq15))))
-(display(escrever-jogo (resolver (ler-jogo arq16) (gerar-tamanho arq16))))
-(display(escrever-jogo (resolver (ler-jogo arq17) (gerar-tamanho arq17))))
-(display(escrever-jogo (resolver (ler-jogo arq18) (gerar-tamanho arq18))))
-(display(escrever-jogo (resolver (ler-jogo arq19) (gerar-tamanho arq19))))
-(display(escrever-jogo (resolver (ler-jogo arq20) (gerar-tamanho arq20))))
-(display(escrever-jogo (resolver (ler-jogo arq-esp-1) (gerar-tamanho arq-esp-1))))
-(display(escrever-jogo (resolver (ler-jogo arq-esp-2) (gerar-tamanho arq-esp-2))))
-(display(escrever-jogo (resolver (ler-jogo arq-esp-3) (gerar-tamanho arq-esp-3))))
-(display(escrever-jogo (resolver (ler-jogo arq-esp-4) (gerar-tamanho arq-esp-4))))
-(escrever-jogo (resolver (ler-jogo arq-esp-5) (gerar-tamanho arq-esp-5)))
-(escrever-jogo (resolver (ler-jogo arq-esp-6) (gerar-tamanho arq-esp-6)))
-
-
+;(define (encapsula-formata-solucao solucao tamanho a l)
+ ; (let ([solucao-reversa (reverse solucao)])
+  ;(cond
+   ;  [(equal? l (largura tamanho)) (encapsula-formata-solucao solucao tamanho (add1 a) 0)]
+    ; [(equal? a (add1 (altura tamanho))) solucao]
+     ;[else
+      ;])))
+;; Dica: procure pelas funções pré-definidas list->string e string-join
 
 
 ;; List String -> void
