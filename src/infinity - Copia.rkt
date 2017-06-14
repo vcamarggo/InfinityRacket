@@ -79,11 +79,7 @@
 ;;Exemplo: (tem-na-lista? '(1 2 3) 3)
 ;; > #t
 (define (tem-na-lista? lista nr)
-  (cond
-    [(empty? lista) #f]
-    [(equal? (first lista) nr) #t]
-    [else
-     (tem-na-lista? (rest lista) nr)]))
+  (not (null? (index-of lista nr))))
 
 ;; Bloco Bloco -> Lógico
 ;; ---------------------
@@ -218,7 +214,7 @@
                  (and (encaixa-ultimo-acima? bloco)  (encaixa-anterior? solucao bloco)))) #f))
 
     ;;se e ultima linha
-    ((if(>= (length solucao) (* (tamanho-altura tam) (sub1 (tamanho-largura tam))))
+    ((if(>= (length solucao) (- (* (tamanho-altura tam) (tamanho-largura tam)) (tamanho-largura tam)))
          ;;se e primeiro elemento
          (if (e-o-primeiro? solucao (tamanho-largura tam))
              (and (encaixa-ultimo-esquerda? bloco) (encaixa-superior? solucao bloco tam) (encaixa-ultimo-abaixo? bloco))
@@ -231,7 +227,7 @@
                       (encaixa-superior? solucao bloco tam) (encaixa-ultimo-abaixo? bloco)))) #f))
     
     ;;se linha do meio
-    ((if(and (>= (length solucao) (tamanho-largura tam)) (< (length solucao) (* (tamanho-altura tam) (sub1 (tamanho-largura tam)))))
+    ((if(and (>= (length solucao) (tamanho-largura tam)) (< (length solucao) (- (* (tamanho-altura tam) (tamanho-largura tam)) (tamanho-largura tam))))
          ;;se e primeiro elemento
          (if (e-o-primeiro? solucao (tamanho-largura tam))
              (and (encaixa-ultimo-esquerda? bloco) (encaixa-superior? solucao bloco tam))
@@ -245,6 +241,7 @@
     (else
      #f)])
 
+;(seguro? 12 '(3 0 1 12 2 13 11 3 5 5 5 4 12 7 0 8 6) (tamanho 7 3))
 
 ;; elemento -> lista
 ;;Recebe um número e retorna possibilidades
@@ -253,10 +250,13 @@
 (define (gera-possibilidades elem)
   (define (possibilidades elem k )
   (cond
+    [(equal? elem 0) (list 0)]
+    [(equal? elem 15) (list 15)]
+    [(or (equal? elem 5) (equal? elem 10)) (list 10 5)]
     [(zero? k) empty]
     [else
      (cons (rotacionar elem) (possibilidades (rotacionar elem) (sub1 k)))]))
-  (possibilidades elem 4))
+  (reverse (possibilidades elem 4)))
 
 ;; String -> lista
 ;;Recebe uma string e transforma em números do jogo
@@ -284,9 +284,6 @@
     [else
       (append (gera-poss (first lst)) (gera-listas-combinacoes (rest lst)))]))
 
-(gera-listas-combinacoes '(" ┏┓ " "┗┫┣┛" "┗┫┣┛" "┏┻┻┓" "┗━━┛"))
-
-
 ;; String -> Jogo
 ;; Faz a leitura e processa um jogo armazenado em arquivo.
 ;; Exemplo: (ler-jogo "..\\testes\\casos\\05.txt")
@@ -303,17 +300,8 @@
   (tamanho (length arquivoLet)
     (string-length (first arquivoLet)))))
 
-(define (remove-da-lista nr lista )
-  (cond
-    [(empty? lista) lista]
-    [else
-     (cond
-       [(equal? (first (first lista)) nr)  (cons (rest (first lista)) (rest lista))]
-        [else (cons (first lista)
-                   (remove-da-lista nr (rest lista) ))])]))
-
-
-
+;; lista numero -> lista de listas de tamanho numero
+;; particiona o jogo a cada i elementos
 (define (part lst i)
   (cond
     [(empty? lst) empty]
@@ -321,12 +309,6 @@
   (cons (take lst i)
         (part (drop lst i) i))]))
 
-;; Jogo -> Jogo || #f
-;; Resolve o jogo Infinity e o retorna resolvido. Caso não seja possível
-;; resolvê-lo, retorna o valor falso. Por exemplo, se passado o seguinte jogo:
-;;
-;; '(( 0  6  6 1)         [ ][┏][┏][╹]
-;;   (12 15 15 6)    =>   [┓][╋][╋][┏]
 ;;   ( 1 10 10 0)         [╹][━][━][ ]
 ;;   ( 0  2  1 0))        [ ][╺][╹][ ]
 ;;
@@ -336,22 +318,19 @@
 ;;   (6 15 15 9)     =>   [┏][╋][╋][┛]
 ;;   (1  5  5 0)          [╹][┃][┃][ ]
 ;;   (0  1  1 0))         [ ][╹][╹][ ]
-;(part (reverse solucao) (tamanho-largura tamanho))
 (define (resolver possibilidades tamanho)
   (define (resolver-encapsulado solucao possibilidades tamanho)
   (let* ([candidatos (if  (empty? possibilidades) '()  (first possibilidades))]
-        [candidato (if  (empty? candidatos) null  (first candidatos))])
+        [candidato (if  (empty? candidatos) null  (first candidatos))]
+        [tamanho-solucao (length solucao)])
     (cond
       [(empty? possibilidades) (part (reverse solucao) (tamanho-largura tamanho))]
       [(empty? candidatos) #f]
       [(seguro? candidato solucao tamanho)
        (or (resolver-encapsulado (cons candidato solucao) (remove candidatos possibilidades) tamanho)
-           (resolver-encapsulado solucao (remove-da-lista candidato possibilidades) tamanho))]
-      [else (resolver-encapsulado solucao (remove-da-lista candidato possibilidades) tamanho)])))
+           (resolver-encapsulado solucao (remove candidato (first possibilidades)) tamanho))]
+      [else (resolver-encapsulado solucao (remove candidato (first possibilidades)) tamanho)])))
   (resolver-encapsulado null possibilidades tamanho))
-
-
-(resolver (ler-jogo "..\\testes\\casos\\11.txt") (gerar-tamanho "..\\testes\\casos\\11.txt"))
 
 ;;numero -> caractere
 ;; Realiza a conversão numero/carctere
@@ -371,21 +350,7 @@
 (cond [ (false? jogo) "nao ha solucao"]
       [(or (empty? jogo)) ""]
      [else
-      (string-append (list->string (map converte-number-caractere (first jogo))) (escrever-jogo (rest jogo)))]))
-
-;;11 12 13 14 18 19 20 aleatorio_30x30_curvas aleatorio_30x30_tudo aleatorio_50x50_curvas aleatorio_50x50_tudo
-;(define arq "..\\testes\\casos\\aleatorio_30x30_tudo.txt")
-;(escrever-jogo (resolver (ler-jogo arq) (gerar-tamanho arq)))
-
-;(define (encapsula-formata-solucao solucao tamanho a l)
- ; (let ([solucao-reversa (reverse solucao)])
-  ;(cond
-   ;  [(equal? l (largura tamanho)) (encapsula-formata-solucao solucao tamanho (add1 a) 0)]
-    ; [(equal? a (add1 (altura tamanho))) solucao]
-     ;[else
-      ;])))
-;; Dica: procure pelas funções pré-definidas list->string e string-join
-
+      (string-append (list->string (map converte-number-caractere (first jogo))) "\n" (escrever-jogo (rest jogo)))]))
 
 ;; List String -> void
 ;; Esta é a função principal. Esta função é chamada a partir do arquivo
@@ -402,4 +367,33 @@
 ;; forma de caracteres. Caso o jogo não possua solução, nada deve ser escrito na
 ;; tela.
 (define (main args)
-  (display args))
+  (display (escrever-jogo(resolver (ler-jogo (first args)) (gerar-tamanho (first args))))))
+
+(define arq1 '("..\\testes\\casos\\01.txt"))
+(define arq2 '("..\\testes\\casos\\02.txt"))
+(define arq3 '("..\\testes\\casos\\03.txt"))
+(define arq4 '("..\\testes\\casos\\04.txt"))
+(define arq5 '("..\\testes\\casos\\05.txt"))
+(define arq6 '("..\\testes\\casos\\06.txt"))
+(define arq7 '("..\\testes\\casos\\07.txt"))
+(define arq8 '("..\\testes\\casos\\08.txt"))
+(define arq9 '("..\\testes\\casos\\09.txt"))
+(define arq10 '("..\\testes\\casos\\10.txt"))
+(define arq11 '("..\\testes\\casos\\11.txt"))
+(define arq12 '("..\\testes\\casos\\12.txt"))
+(define arq13 '("..\\testes\\casos\\13.txt"))
+(define arq14 '("..\\testes\\casos\\14.txt"))
+(define arq15 '("..\\testes\\casos\\15.txt"))
+(define arq16 '("..\\testes\\casos\\16.txt"))
+(define arq17 '("..\\testes\\casos\\17.txt"))
+(define arq18 '("..\\testes\\casos\\18.txt"))
+(define arq19 '("..\\testes\\casos\\19.txt"))
+(define arq20 '("..\\testes\\casos\\20.txt"))
+(define arq-esp-1 '("..\\testes\\casos\\aleatorio_10x10_curvas.txt"))
+(define arq-esp-2 '("..\\testes\\casos\\aleatorio_30x30_curvas"))
+(define arq-esp-3 '("..\\testes\\casos\\aleatorio_50x50_curvas.txt"))
+(define arq-esp-4 '("..\\testes\\casos\\aleatorio_10x10_tudo.txt"))
+(define arq-esp-5 '("..\\testes\\casos\\aleatorio_30x30_tudo.txt"))
+(define arq-esp-6 '("..\\testes\\casos\\aleatorio_50x50_tudo.txt"))
+
+;(main arq-esp-6)
