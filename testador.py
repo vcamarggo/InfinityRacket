@@ -12,7 +12,7 @@ def ler_casos(dir_testes):
         nome_caso = os.path.splitext(os.path.basename(arq_caso))[0]
         arq_esperado = os.path.join(dir_esperados, nome_caso + '_resolvido.txt')
 
-        with open(arq_esperado) as esperado:
+        with open(arq_esperado, encoding='utf8') as esperado:
             casos.append(([arq_caso], esperado.read()))
 
     return casos
@@ -23,18 +23,24 @@ def main(dir_testes, prog):
 def testar(prog, casos):
     total = 0
     falhas = 0
+    
     for caso in casos:
         params, esperado = caso
         nome = " ".join(prog + params)
-        print nome,
+        print (nome)
         ok, obtido = executar_programa(prog, params)
         total += 1
-        if not ok or obtido != esperado:
+        if not ok or obtido.decode() != esperado:
+            print(  obtido.decode())
+            print(esperado)
             falhas += 1
-            print "Falhou!"
+            if ok:
+                print("Falhou!")
+            else: 
+                print (obtido)
         else:
-            print "OK!"
-    print "Passou em", (total - falhas), "teste(s) do total de", total
+            print ("OK!")
+    print ("Passou em", (total - falhas), "teste(s) do total de", total)
 
 def executar_programa(prog, params):
     import subprocess
@@ -47,6 +53,6 @@ def executar_programa(prog, params):
 if __name__ == '__main__':
     import sys
     if len(sys.argv) < 3:
-        print "Modo de usar: $python %s dir_testes nome-do-programa [parametros]" % sys.argv[0]
+        print ("Modo de usar: $python %s dir_testes nome-do-programa [parametros]" % sys.argv[0])
         sys.exit(1)
     main(sys.argv[1], sys.argv[2:])
