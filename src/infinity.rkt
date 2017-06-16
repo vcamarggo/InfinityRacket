@@ -357,7 +357,7 @@
 (cond [ (false? jogo) ""]
       [(or (empty? jogo)) ""]
      [else
-      (string-append (list->string (map converte-number-caractere (first jogo))) (if(not (empty? jogo)) "\n" "") (escrever-jogo (rest jogo)))]))
+      (string-append (list->string (map converte-number-caractere (first jogo))) (if(not (empty? (rest jogo))) "\n" "") (escrever-jogo (rest jogo)))]))
 
 ;; List String -> void
 ;; Esta é a função principal. Esta função é chamada a partir do arquivo
