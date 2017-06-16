@@ -31,10 +31,7 @@ def testar(prog, casos):
         total += 1
         if not ok or obtido != esperado:
             falhas += 1
-            if ok:
-                print "Falhou!"
-            else: 
-                print obtido
+            print "Falhou!"
         else:
             print "OK!"
     print "Passou em", (total - falhas), "teste(s) do total de", total
